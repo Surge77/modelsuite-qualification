@@ -1,4 +1,7 @@
+import { useState } from 'react';
 import { deleteTask } from '../../api/tasks';
+import toast from 'react-hot-toast';
+import ConfirmDialog from '../ConfirmDialog';
 
 /* ── SVG Action Icons ── */
 const IconEdit = () => (
@@ -42,13 +45,16 @@ const STATUS_CLASS = {
 };
 
 const TasksTable = ({ tasks, onEdit, onRefresh }) => {
+  const [pendingDelete, setPendingDelete] = useState(null);
 
   const handleDelete = async (id) => {
     try {
       await deleteTask(id);
       onRefresh();
     } catch {
-      alert('Failed to delete task');
+      toast.error('Failed to delete task');
+    } finally {
+      setPendingDelete(null);
     }
   };
 
@@ -67,6 +73,15 @@ const TasksTable = ({ tasks, onEdit, onRefresh }) => {
 
   return (
     <div className="overflow-x-auto">
+      {pendingDelete && (
+        <ConfirmDialog
+          title="Delete task?"
+          message="This task will be permanently deleted. This action cannot be undone."
+          confirmLabel="Delete"
+          onConfirm={() => handleDelete(pendingDelete)}
+          onCancel={() => setPendingDelete(null)}
+        />
+      )}
       <table className="w-full border-collapse" style={{ fontSize: '13.5px' }}>
         <thead>
           <tr>
@@ -145,7 +160,7 @@ const TasksTable = ({ tasks, onEdit, onRefresh }) => {
                     <IconEdit />
                   </button>
                   <button
-                    onClick={() => handleDelete(task._id)}
+                    onClick={() => setPendingDelete(task._id)}
                     title="Delete task"
                     className="action-btn action-btn-delete">
                     <IconDelete />

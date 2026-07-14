@@ -1,4 +1,5 @@
 ﻿import { useState } from 'react';
+import toast from 'react-hot-toast';
 import { updateTask, fetchTalents } from '../../api/tasks';
 
 const STATUS_OPTIONS = ['Open', 'Claimed', 'Submitted', 'Approved', 'Rejected'];
@@ -28,7 +29,7 @@ const EditTaskModal = ({ task, onClose, onUpdated }) => {
       onUpdated(data);
       onClose();
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to update task');
+      toast.error(err.response?.data?.message || 'Failed to update task');
     }
   };
 

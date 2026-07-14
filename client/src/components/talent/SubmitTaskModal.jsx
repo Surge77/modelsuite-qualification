@@ -1,4 +1,5 @@
 ﻿import { useState } from 'react';
+import toast from 'react-hot-toast';
 import { submitTask } from '../../api/submissions';
 
 const SubmitTaskModal = ({ task, onClose, onSubmitted }) => {
@@ -19,7 +20,7 @@ const SubmitTaskModal = ({ task, onClose, onSubmitted }) => {
       onSubmitted();
       onClose();
     } catch (err) {
-      alert(err.response?.data?.message || 'Submission failed');
+      toast.error(err.response?.data?.message || 'Submission failed');
     }
   };
 

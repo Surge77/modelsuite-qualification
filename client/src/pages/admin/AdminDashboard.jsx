@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import Sidebar from '../../components/admin/Sidebar';
 import TasksTable from '../../components/admin/TasksTable';
 import CreateTaskModal from '../../components/admin/CreateTaskModal';
 import EditTaskModal from '../../components/admin/EditTaskModal';
-import { fetchAllTasks } from '../../api/tasks';
+import { fetchAllTasks, fetchTalents } from '../../api/tasks';
 
 /* ── Search icon ── */
 const IconSearch = () => (
@@ -22,6 +23,7 @@ const IconPlus = () => (
 
 const AdminDashboard = () => {
   const [tasks, setTasks]           = useState([]);
+  const [talents, setTalents]       = useState([]);
   const [showCreate, setShowCreate] = useState(false);
   const [editTask, setEditTask]     = useState(null);
   const [search, setSearch]         = useState('');
@@ -29,10 +31,11 @@ const AdminDashboard = () => {
 
   const loadTasks = async () => {
     try {
-      const { data } = await fetchAllTasks();
-      setTasks(data);
+      const [tasksRes, talentsRes] = await Promise.all([fetchAllTasks(), fetchTalents()]);
+      setTasks(tasksRes.data);
+      setTalents(talentsRes.data);
     } catch {
-      alert('Failed to load tasks');
+      toast.error('Failed to load tasks');
     }
   };
 
@@ -42,15 +45,21 @@ const AdminDashboard = () => {
   const stats = {
     total:     tasks.length,
     open:      tasks.filter((t) => t.status === 'Open').length,
+    claimed:   tasks.filter((t) => t.status === 'Claimed').length,
     submitted: tasks.filter((t) => t.status === 'Submitted').length,
     approved:  tasks.filter((t) => t.status === 'Approved').length,
+    rejected:  tasks.filter((t) => t.status === 'Rejected').length,
+    talents:   talents.length,
   };
 
   const statCards = [
-    { label: 'Total Tasks', value: stats.total,     colorClass: 'stat-card-default', valueColor: '#E5E2E1' },
-    { label: 'Open',        value: stats.open,      colorClass: 'stat-card-blue',    valueColor: '#60A5FA' },
-    { label: 'Submitted',   value: stats.submitted, colorClass: 'stat-card-info',    valueColor: '#60A5FA' },
-    { label: 'Approved',    value: stats.approved,  colorClass: 'stat-card-green',   valueColor: '#34D399' },
+    { label: 'Total Tasks',    value: stats.total,     colorClass: 'stat-card-default', valueColor: '#E5E2E1' },
+    { label: 'Open',           value: stats.open,      colorClass: 'stat-card-blue',    valueColor: '#60A5FA' },
+    { label: 'Claimed',        value: stats.claimed,   colorClass: 'stat-card-default', valueColor: '#E5E2E1' },
+    { label: 'Submitted',      value: stats.submitted, colorClass: 'stat-card-info',    valueColor: '#60A5FA' },
+    { label: 'Approved',       value: stats.approved,  colorClass: 'stat-card-green',   valueColor: '#34D399' },
+    { label: 'Rejected',       value: stats.rejected,  colorClass: 'stat-card-default', valueColor: '#F87171' },
+    { label: 'Active Talents', value: stats.talents,   colorClass: 'stat-card-blue',    valueColor: '#60A5FA' },
   ];
 
   /* Filter tasks */
